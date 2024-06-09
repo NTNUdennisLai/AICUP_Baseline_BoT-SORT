@@ -4,7 +4,7 @@ MODEL:
   BACKBONE:
     NAME: build_resnet_backbone
     NORM: BN
-    DEPTH: 50x
+    DEPTH: 101x
     LAST_STRIDE: 1
     FEAT_DIM: 2048
     WITH_IBN: False
