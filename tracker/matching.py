@@ -49,6 +49,83 @@ def linear_assignment(cost_matrix, thresh):
     return matches, unmatched_a, unmatched_b
 
 
+def bbox_cious(boxes1, boxes2):
+    """
+    Calculate the Complete IoU (CIoU) between each pair of boxes in the two input arrays.
+    
+    :param boxes1: (N, 4) ndarray of float. Ground truth bounding boxes in the format [x1, y1, x2, y2].
+    :param boxes2: (M, 4) ndarray of float. Predicted bounding boxes in the format [x1, y1, x2, y2].
+    :return: (N, M) ndarray of float. The CIoU between each pair of boxes.
+    """
+    N = boxes1.shape[0]
+    M = boxes2.shape[0]
+    
+    # Initialize the CIoU matrix
+    cious = np.zeros((N, M), dtype=np.float)
+
+    for i in range(N):
+        for j in range(M):
+            box1 = boxes1[i]
+            box2 = boxes2[j]
+
+            # Calculate IoU
+            inter_x1 = max(box1[0], box2[0])
+            inter_y1 = max(box1[1], box2[1])
+            inter_x2 = min(box1[2], box2[2])
+            inter_y2 = min(box1[3], box2[3])
+
+            inter_area = max(0, inter_x2 - inter_x1) * max(0, inter_y2 - inter_y1)
+            box1_area = (box1[2] - box1[0]) * (box1[3] - box1[1])
+            box2_area = (box2[2] - box2[0]) * (box2[3] - box2[1])
+            union_area = box1_area + box2_area - inter_area
+
+            iou = inter_area / union_area
+
+            # Calculate center distances
+            box1_center_x = (box1[0] + box1[2]) / 2
+            box1_center_y = (box1[1] + box1[3]) / 2
+            box2_center_x = (box2[0] + box2[2]) / 2
+            box2_center_y = (box2[1] + box2[3]) / 2
+            center_distance = (box1_center_x - box2_center_x) ** 2 + (box1_center_y - box2_center_y) ** 2
+
+            # Calculate enclosing box area
+            enclose_x1 = min(box1[0], box2[0])
+            enclose_y1 = min(box1[1], box2[1])
+            enclose_x2 = max(box1[2], box2[2])
+            enclose_y2 = max(box1[3], box2[3])
+            enclose_diagonal = (enclose_x2 - enclose_x1) ** 2 + (enclose_y2 - enclose_y1) ** 2
+
+            # Calculate aspect ratio term
+            w1, h1 = box1[2] - box1[0], box1[3] - box1[1]
+            w2, h2 = box2[2] - box2[0], box2[3] - box2[1]
+            v = (4 / (np.pi ** 2)) * (np.arctan(w1 / h1) - np.arctan(w2 / h2)) ** 2
+            with np.errstate(divide='ignore', invalid='ignore'):
+                alpha = v / (1 - iou + v)
+
+            ciou = iou - (center_distance / enclose_diagonal + alpha * v)
+            cious[i, j] = ciou
+
+    return cious
+
+def cious(atlbrs, btlbrs):
+    """
+    Compute cost based on CIoU
+    :type atlbrs: list[tlbr] | np.ndarray
+    :type atlbrs: list[tlbr] | np.ndarray
+
+    :rtype cious np.ndarray
+    """
+    cious = np.zeros((len(atlbrs), len(btlbrs)), dtype=np.float)
+    if cious.size == 0:
+        return cious
+
+    cious = bbox_cious(
+        np.ascontiguousarray(atlbrs, dtype=np.float),
+        np.ascontiguousarray(btlbrs, dtype=np.float)
+    )
+    return cious
+
+
 def ious(atlbrs, btlbrs):
     """
     Compute cost based on IoU
