@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
 # from torch.backends import cudnn
+import torch.nn as nn
 
 from fast_reid.fastreid.config import get_cfg
 from fast_reid.fastreid.modeling.meta_arch import build_model
@@ -82,14 +83,41 @@ class FastReIDInterface:
 
         batch_patches = []
         patches = []
+        patch_flows = []
         for d in range(np.size(detections, 0)):
             tlbr = detections[d, :4].astype(np.int_)
+
+            # print('tlbr', tlbr)
+            # # Load the flow data
+            # flow_data = np.load('/home/F0970996972/pytorch/yolo_v8_file/aicup_data/AICUP_Baseline_BoT-SORT/fast_reid/optflow/cluster_centers_0902_150000_151900_cam_0.npy')
+
+            # # Define the bounding box [x_min, y_min, x_max, y_max]
+            # bbox = tlbr
+
+            # # Extract the region of interest from the flow data
+            # # Note: bbox is [x_min, y_min, x_max, y_max]
+            # roi_flow_data = flow_data[bbox[1]:bbox[3], bbox[0]:bbox[2]]
+
+            # # Compute the mean across all pixels and flow vectors in this region
+            # # axis=(0, 1) to average over both pixel dimensions, retaining the 3 flow centers and their 2 components
+            # average_flow_vectors = np.mean(roi_flow_data, axis=(0, 1))
+
+            # # print("Average Flow Vectors within the specified bounding box:", average_flow_vectors)
+            # flattened_vector = average_flow_vectors.flatten()
+            # # print('flattened_vector', flattened_vector)
+            # flattened_tensor = torch.tensor(flattened_vector, dtype=torch.float32)
+            # # print('flattened_tensor', flattened_tensor)
+            # # flattened_vector = torch.tensor(flattened_vector)
+            # linear_layer = nn.Linear(in_features=6, out_features=2048)
+            # output_vector = linear_layer(flattened_tensor)
+            # # print('output_vector', output_vector)
+            # patch_flows.append(flattened_tensor)
+
             tlbr[0] = max(0, tlbr[0])
             tlbr[1] = max(0, tlbr[1])
             tlbr[2] = min(W - 1, tlbr[2])
             tlbr[3] = min(H - 1, tlbr[3])
             patch = image[tlbr[1]:tlbr[3], tlbr[0]:tlbr[2], :]
-
             # the model expects RGB inputs
             patch = patch[:, :, ::-1]
 
@@ -116,17 +144,34 @@ class FastReIDInterface:
             patches = torch.stack(patches, dim=0)
             batch_patches.append(patches)
 
+        # features = np.zeros((0, 2054))
         features = np.zeros((0, 2048))
         # features = np.zeros((0, 768))
 
-        for patches in batch_patches:
+        for idx, patches in enumerate(batch_patches):
 
             # Run model
             patches_ = torch.clone(patches)
+            # print('patches shape', patches.shape)
+            # print('idx', idx)
             pred = self.model(patches)
             pred[torch.isinf(pred)] = 1.0
 
             feat = postprocess(pred)
+            # print(feat.shape)
+            # print(len(feat))
+
+            # feat_tensor = torch.tensor(feat, dtype=torch.float32)
+            # print('patch len', len(patch_flows))
+            # # opt_feature = torch.tensor(patch_flows, dtype=torch.float32)
+            # opt_feature = torch.tensor([item.cpu().detach().numpy() for item in patch_flows])
+            # if opt_feature.dim() == 1:
+            #     opt_feature = opt_feature.unsqueeze(0)  # Adds a new dimension at index 0
+            # if feat_tensor.dim() == 1:
+            #     feat_tensor = feat_tensor.unsqueeze(0)  # Adds a new dimension at index 0
+
+            # combined_feat = torch.cat((opt_feature, feat_tensor), dim=1)
+            # combined_feat_np = combined_feat.numpy()
 
             nans = np.isnan(np.sum(feat, axis=1))
             if np.isnan(feat).any():
@@ -145,7 +190,8 @@ class FastReIDInterface:
                         plt.imshow(patch_np)
                         plt.show()
 
+            # features = np.vstack((features, combined_feat_np))
             features = np.vstack((features, feat))
-
+            # print(features)
         return features
 
