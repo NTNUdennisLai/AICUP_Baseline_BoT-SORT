@@ -4,6 +4,10 @@
 >  - reid weight: logs/AICUP_115/bagtrick_R50-ibn/model_0058.pth
 >  - configs: bagtricks_R50-ibn_tsai_1.yml
 >  - colab ipynb: team_5076_colab.ipynb
+>  - yaml : bagtricks_R50-ibn_tsai_1.yml
+>  - Base-bagtricks.yml: 50x -> 101x
+
+!!! The rest of the process below is basically the same!!!
 
 # AICUP Baseline: BoT-SORT
 
