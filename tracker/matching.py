@@ -61,7 +61,7 @@ def bbox_cious(boxes1, boxes2):
     M = boxes2.shape[0]
     
     # Initialize the CIoU matrix
-    cious = np.zeros((N, M), dtype=np.float)
+    cious = np.zeros((N, M), dtype=np.float64)
 
     for i in range(N):
         for j in range(M):
@@ -115,13 +115,13 @@ def cious(atlbrs, btlbrs):
 
     :rtype cious np.ndarray
     """
-    cious = np.zeros((len(atlbrs), len(btlbrs)), dtype=np.float)
+    cious = np.zeros((len(atlbrs), len(btlbrs)), dtype=np.float64)
     if cious.size == 0:
         return cious
 
     cious = bbox_cious(
-        np.ascontiguousarray(atlbrs, dtype=np.float),
-        np.ascontiguousarray(btlbrs, dtype=np.float)
+        np.ascontiguousarray(atlbrs, dtype=np.float64),
+        np.ascontiguousarray(btlbrs, dtype=np.float64)
     )
     return cious
 
@@ -134,13 +134,13 @@ def ious(atlbrs, btlbrs):
 
     :rtype ious np.ndarray
     """
-    ious = np.zeros((len(atlbrs), len(btlbrs)), dtype=np.float)
+    ious = np.zeros((len(atlbrs), len(btlbrs)), dtype=np.float64)
     if ious.size == 0:
         return ious
 
     ious = bbox_ious(
-        np.ascontiguousarray(atlbrs, dtype=np.float),
-        np.ascontiguousarray(btlbrs, dtype=np.float)
+        np.ascontiguousarray(atlbrs, dtype=np.float64),
+        np.ascontiguousarray(btlbrs, dtype=np.float64)
     )
 
     return ious
@@ -210,11 +210,11 @@ def embedding_distance(tracks, detections, metric='cosine'):
     :return: cost_matrix np.ndarray
     """
 
-    cost_matrix = np.zeros((len(tracks), len(detections)), dtype=np.float)
+    cost_matrix = np.zeros((len(tracks), len(detections)), dtype=np.float64)
     if cost_matrix.size == 0:
         return cost_matrix
-    det_features = np.asarray([track.curr_feat for track in detections], dtype=np.float)
-    track_features = np.asarray([track.smooth_feat for track in tracks], dtype=np.float)
+    det_features = np.asarray([track.curr_feat for track in detections], dtype=np.float64)
+    track_features = np.asarray([track.smooth_feat for track in tracks], dtype=np.float64)
 
     cost_matrix = np.maximum(0.0, cdist(track_features, det_features, metric))  # / 2.0  # Nomalized features
     return cost_matrix
