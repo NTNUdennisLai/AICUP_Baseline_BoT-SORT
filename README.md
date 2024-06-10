@@ -7,7 +7,7 @@
 >  - yaml : bagtricks_R50-ibn_tsai_1.yml
 >  - Base-bagtricks.yml: 50x -> 101x
 
-!!! The rest of the process below is basically the same!!!
+!!! The rest of the process below is basically the same !!!
 
 # AICUP Baseline: BoT-SORT
 
