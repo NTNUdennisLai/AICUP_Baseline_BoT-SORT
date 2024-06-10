@@ -1,3 +1,12 @@
+# weights, ipynb google drive
+https://drive.google.com/drive/folders/1mss99XUUzXcsOVieEV0mFReTtJOnb8Nf?usp=sharing
+
+
+yolo weight: pretrained/best.pt
+reid weight: logs/AICUP_115/bagtrick_R50-ibn/model_0058.pth
+configs: bagtricks_R50-ibn_tsai_1.yml
+colab ipynb: team_5076_colab.ipynb
+
 # AICUP Baseline: BoT-SORT
 
 > [**BoT-SORT: Robust Associations Multi-Pedestrian Tracking**](https://arxiv.org/abs/2206.14651)
